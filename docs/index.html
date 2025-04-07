@@ -1,162 +1,208 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Temp Mail Generator</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f0f4f8;
-      margin: 0;
-      padding: 20px;
-    }
-    .container {
-      background: #ffffff;
-      padding: 30px;
-      max-width: 700px;
-      margin: auto;
-      border-radius: 12px;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.08);
-    }
-    h1 {
-      text-align: center;
-      color: #333;
-    }
-    #email {
-      font-weight: bold;
-      color: #007acc;
-      font-size: 1.2em;
-      word-break: break-all;
-    }
-    button {
-      background: #007acc;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      margin: 10px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #005fa3;
-    }
-    #inbox {
-      margin-top: 30px;
-    }
-    .message {
-      border: 1px solid #ddd;
-      padding: 12px;
-      margin-bottom: 10px;
-      border-radius: 8px;
-      background: #f9f9f9;
-      cursor: pointer;
-    }
-    .message:hover {
-      background: #eef6ff;
-    }
-    .message-content {
-      display: none;
-      margin-top: 10px;
-      border-top: 1px dashed #ccc;
-      padding-top: 10px;
-      color: #444;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TempMail Pro - Login</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-
-  <div class="container">
-    <h1>📬 Temp Mail Generator</h1>
-    <p>Disposable email powered by Mail.tm API</p>
-
-    <button onclick="generate()">Generate New Email</button>
-    <button onclick="copyEmail()">📋 Copy</button>
-    <p>Your Email:</p>
-    <p id="email">Loading...</p>
-
-    <div id="inbox">
-      <h2>Inbox</h2>
-      <p>Waiting for messages...</p>
-    </div>
+  <div class="auth-container">
+    <h1>📨 TempMail Pro</h1>
+    <form id="authForm">
+      <input type="email" id="email" placeholder="Enter email" required />
+      <input type="password" id="password" placeholder="Enter password" required />
+      <button type="submit">Login / Register</button>
+    </form>
+    <p class="info">Don't worry, this is 100% anonymous. Temporary email only 🔐</p>
   </div>
 
-  <script>
-    let token = "";
-    let password = "Temp12345!";
-    let currentAddress = "";
+  <script src="script.js"></script>
+</body>
+</html>
 
-    async function generate() {
-      const domainRes = await fetch("https://api.mail.tm/domains");
-      const domainData = await domainRes.json();
-      const domain = domainData["hydra:member"][0].domain;
+<!-- inbox.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TempMail Pro - Inbox</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="inbox-wrapper">
+    <aside class="sidebar">
+      <h2>Your Inbox</h2>
+      <p id="userEmail"></p>
+      <button onclick="logout()">Logout</button>
+      <div id="emailList">Loading emails...</div>
+    </aside>
+    <main class="main-panel">
+      <h2>Message</h2>
+      <div id="messageViewer">Select a message to view</div>
+    </main>
+  </div>
 
-      const localPart = Math.random().toString(36).substring(2, 10);
-      const address = `${localPart}@${domain}`;
-      currentAddress = address;
-      document.getElementById("email").innerText = address;
+  <script src="script.js"></script>
+</body>
+</html>
 
+<!-- styles.css -->
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f8f9fa;
+  color: #333;
+}
+.auth-container {
+  max-width: 400px;
+  margin: 80px auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  text-align: center;
+}
+.auth-container input {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+.auth-container button {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background: #4f46e5;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+}
+.auth-container .info {
+  font-size: 0.8em;
+  color: #666;
+  margin-top: 10px;
+}
+.inbox-wrapper {
+  display: flex;
+  height: 100vh;
+}
+.sidebar {
+  width: 300px;
+  background: #fff;
+  padding: 20px;
+  border-right: 1px solid #ddd;
+  overflow-y: auto;
+}
+.main-panel {
+  flex-grow: 1;
+  padding: 20px;
+  overflow-y: auto;
+  background: #f1f5f9;
+}
+.email-item {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #fff;
+}
+.email-item:hover {
+  background: #f0f0f0;
+}
+.message-body {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+/* script.js */
+window.addEventListener("DOMContentLoaded", () => {
+  const email = localStorage.getItem("email");
+  const token = localStorage.getItem("token");
+  const currentPage = location.pathname.split("/").pop();
+
+  if (currentPage === "index.html" || currentPage === "") {
+    const form = document.getElementById("authForm");
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const address = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      // Register
       await fetch("https://api.mail.tm/accounts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ address, password })
-      });
+      }).catch(() => {}); // Ignore errors (account might already exist)
 
+      // Login
       const tokenRes = await fetch("https://api.mail.tm/token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ address, password })
       });
+
       const tokenData = await tokenRes.json();
-      token = tokenData.token;
+      if (tokenData.token) {
+        localStorage.setItem("email", address);
+        localStorage.setItem("token", tokenData.token);
+        window.location.href = "inbox.html";
+      } else {
+        alert("Login failed! Try again.");
+      }
+    };
+  }
 
-      getMessages();
-      setInterval(getMessages, 5000);
+  if (currentPage === "inbox.html") {
+    if (!email || !token) {
+      window.location.href = "index.html";
+      return;
     }
+    document.getElementById("userEmail").innerText = email;
 
-    async function getMessages() {
-      if (!token) return;
+    const emailList = document.getElementById("emailList");
+    const viewer = document.getElementById("messageViewer");
 
-      const inbox = document.getElementById("inbox");
+    async function loadInbox() {
       const res = await fetch("https://api.mail.tm/messages", {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      inbox.innerHTML = "<h2>Inbox</h2>";
-
-      if (data["hydra:member"].length === 0) {
-        inbox.innerHTML += "<p>No messages yet.</p>";
-        return;
-      }
-
-      data["hydra:member"].forEach(async msg => {
-        const fullRes = await fetch(`https://api.mail.tm/messages/${msg.id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const full = await fullRes.json();
-
-        const div = document.createElement("div");
-        div.classList.add("message");
-        div.innerHTML = `
-          <strong>📧 From:</strong> ${full.from.name || full.from.address}<br>
-          <strong>📌 Subject:</strong> ${full.subject}
-          <div class="message-content"><pre>${full.text}</pre></div>
-        `;
-        div.onclick = () => {
-          const content = div.querySelector(".message-content");
-          content.style.display = content.style.display === "block" ? "none" : "block";
-        };
-        inbox.appendChild(div);
+      emailList.innerHTML = "";
+      data["hydra:member"].forEach(msg => {
+        const box = document.createElement("div");
+        box.className = "email-item";
+        box.innerHTML = `<strong>${msg.subject}</strong><br><small>${msg.from.address}</small>`;
+        box.onclick = () => showMessage(msg.id);
+        emailList.appendChild(box);
       });
     }
 
-    function copyEmail() {
-      navigator.clipboard.writeText(currentAddress);
-      alert("Email copied to clipboard!");
+    async function showMessage(id) {
+      const res = await fetch(`https://api.mail.tm/messages/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const msg = await res.json();
+      viewer.innerHTML = `<div class='message-body'>
+        <strong>Subject:</strong> ${msg.subject}<br><br>
+        ${msg.html || `<pre>${msg.text}</pre>`}
+      </div>`;
     }
 
-    generate(); // auto-run on page load
-  </script>
+    function logout() {
+      localStorage.clear();
+      window.location.href = "index.html";
+    }
 
-</body>
-</html>
+    loadInbox();
+    setInterval(loadInbox, 10000);
+    window.logout = logout;
+  }
+});
