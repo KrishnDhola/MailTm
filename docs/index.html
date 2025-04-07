@@ -3,70 +3,126 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MailTm - Free Disposable Emails</title>
+  <title>Temp Mail Generator</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f4f9ff;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background-color: #20232a;
-      padding: 20px;
-      color: white;
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
       text-align: center;
+      padding: 30px;
     }
-    main {
-      padding: 40px 20px;
-      max-width: 800px;
+    .container {
+      background: #fff;
+      padding: 20px;
       margin: auto;
+      max-width: 600px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
     }
-    h1 {
-      color: #20232a;
+    #email {
+      font-weight: bold;
+      font-size: 1.2em;
+      color: #008800;
     }
-    p {
-      font-size: 18px;
-      color: #333;
-      line-height: 1.6;
-    }
-    footer {
-      margin-top: 40px;
-      padding: 20px;
-      text-align: center;
-      background-color: #20232a;
+    button {
+      padding: 10px 20px;
+      background: #0088cc;
+      border: none;
       color: white;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 10px;
+    }
+    .emails {
+      text-align: left;
+      margin-top: 20px;
+    }
+    .email-item {
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+    .email-item h3 {
+      margin: 0;
     }
   </style>
 </head>
 <body>
+  <div class="container">
+    <h1>📬 Temp Mail Generator</h1>
+    <p>Click the button to generate a new disposable email address.</p>
+    <button onclick="generate()">🔄 Generate Email</button>
+    <p>Your Email:</p>
+    <p id="email">Loading...</p>
 
-  <header>
-    <h1>MailTm</h1>
-    <p>Free, anonymous disposable email addresses</p>
-  </header>
+    <div class="emails" id="emails">
+      <h2>Inbox</h2>
+      <p>Waiting for messages...</p>
+    </div>
+  </div>
 
-  <main>
-    <h2>What is MailTm?</h2>
-    <p>
-      MailTm is an open-source email service that gives you temporary, disposable inboxes to protect your privacy online. No sign-up required.
-    </p>
+  <script>
+    let token = "";
+    let id = "";
 
-    <h2>Why Use It?</h2>
-    <ul>
-      <li>✔️ Keep your real email safe</li>
-      <li>✔️ Avoid spam</li>
-      <li>✔️ Use one-time emails for sign-ups</li>
-      <li>✔️ 100% free and open source</li>
-    </ul>
+    async function generate() {
+      const domainRes = await fetch("https://api.mail.tm/domains");
+      const domainData = await domainRes.json();
+      const domain = domainData["hydra:member"][0].domain;
 
-    <h2>Built with the <a href="https://github.com/mailtm/API" target="_blank">Mail.tm API</a></h2>
-    <p>Connect MailTm to your own apps or automations easily using its public API.</p>
-  </main>
+      const random = Math.random().toString(36).substring(2, 10);
+      const address = `${random}@${domain}`;
+      const password = "password123";
 
-  <footer>
-    &copy; 2025 MailTm Project. All rights reserved.
-  </footer>
+      document.getElementById("email").innerText = address;
 
+      await fetch("https://api.mail.tm/accounts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address, password }),
+      });
+
+      const tokenRes = await fetch("https://api.mail.tm/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address, password }),
+      });
+
+      const tokenData = await tokenRes.json();
+      token = tokenData.token;
+
+      getMessages();
+      setInterval(getMessages, 5000);
+    }
+
+    async function getMessages() {
+      const res = await fetch("https://api.mail.tm/messages", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+
+      const emailsDiv = document.getElementById("emails");
+      emailsDiv.innerHTML = "<h2>Inbox</h2>";
+
+      if (data["hydra:member"].length === 0) {
+        emailsDiv.innerHTML += "<p>No messages yet.</p>";
+      } else {
+        data["hydra:member"].forEach(msg => {
+          emailsDiv.innerHTML += `
+            <div class="email-item">
+              <h3>${msg.from.name || msg.from.address}</h3>
+              <strong>${msg.subject}</strong>
+              <p>${msg.intro}</p>
+            </div>
+          `;
+        });
+      }
+    }
+
+    // Generate on load
+    generate();
+  </script>
 </body>
 </html>
